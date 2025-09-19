@@ -10,19 +10,48 @@ from datetime import datetime
 import pickle
 import inference as predict
 
-task = 'regression'  # 'regression'
-dataset = 'Tg'
-radius=1
-dim=50
-layer_hidden=6
-layer_output=6
+nips_gnn = {
+    'Tg' : {
+        'radius': 1,
+        'dim': 50,
+        'layer_hidden': 6,
+        'layer_output': 6,
+        'batch_train': 32,
+        'batch_test': 32,
+        'lr': 1e-4,
+        'lr_decay': 0.99,
+        'decay_interval': 10,
+        'iteration': 14,
+        'n_fingerprints': 651,
+    },
+    'FFV' : {
+        'radius': 1,
+        'dim': 100,
+        'layer_hidden': 12,
+        'layer_output': 12,
+        'batch_train': 16,
+        'batch_test': 16,
+        'lr': 1e-5,
+        'lr_decay': 0.99,
+        'decay_interval': 10,
+        'iteration': 100,
+        'n_fingerprints': 549,
+    },
+}
 
-batch_train=32
-batch_test=32
-lr=1e-4
-lr_decay=0.99
-decay_interval=10
-iteration=14
+task = 'regression'  # 'regression'
+dataset = 'FFV' # 'Tg' or 'FFV'
+radius=nips_gnn[dataset]['radius']
+dim=nips_gnn[dataset]['dim']
+layer_hidden=nips_gnn[dataset]['layer_hidden']
+layer_output=nips_gnn[dataset]['layer_output']
+
+batch_train=nips_gnn[dataset]['batch_train']
+batch_test=nips_gnn[dataset]['batch_test']
+lr=nips_gnn[dataset]['lr']
+lr_decay=nips_gnn[dataset]['lr_decay']
+decay_interval=nips_gnn[dataset]['decay_interval']
+iteration=nips_gnn[dataset]['iteration']
 
 if torch.cuda.is_available():
     device = torch.device('cuda')
@@ -286,7 +315,7 @@ if __name__ == '__main__':
         tester.save_result(result, file_result)
 
         if epoch % 2 == 0:
-            model_path = './NIPS_GNN/model/model.pt'
+            model_path = f'./NIPS_GNN/model/{dataset.lower()}_model.pt'
             torch.save(model.state_dict(), model_path)
             print('The trained model state_dict is saved at:', model_path)
 
@@ -301,6 +330,6 @@ if __name__ == '__main__':
             print('-'*100)
 
     # Save the trained model's state_dict
-    model_path = './NIPS_GNN/model/model.pt'
+    model_path = f'./NIPS_GNN/model/{dataset.lower()}_model.pt'
     torch.save(model.state_dict(), model_path)
     print('The trained model state_dict is saved at:', model_path)

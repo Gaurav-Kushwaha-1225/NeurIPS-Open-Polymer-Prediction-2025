@@ -11,4 +11,5 @@
 ## Steps:
 - ### Download the above datasets.
 - ### Run the `Datasets/Tg/data_augmentation.ipynb` file to get the `Tg.csv` augmented data.
+- ### Or Use the already available `Tg.csv`.
 - ### Use the NIPS GNN for Training & Inference on Tg Property.

@@ -8,12 +8,51 @@ import pickle
 import tqdm
 import numpy as np
 
-task = 'regression'
-radius = 1
-dim = 50
-layer_hidden = 6
-layer_output = 6
-N_fingerprints = 651  # This should match the model's expected input size
+nips_gnn = {
+    'Tg' : {
+        'radius': 1,
+        'dim': 50,
+        'layer_hidden': 6,
+        'layer_output': 6,
+        'batch_train': 32,
+        'batch_test': 32,
+        'lr': 1e-4,
+        'lr_decay': 0.99,
+        'decay_interval': 10,
+        'iteration': 14,
+        'n_fingerprints': 651,
+    },
+    'FFV' : {
+        'radius': 1,
+        'dim': 100,
+        'layer_hidden': 12,
+        'layer_output': 12,
+        'batch_train': 16,
+        'batch_test': 16,
+        'lr': 1e-5,
+        'lr_decay': 0.99,
+        'decay_interval': 10,
+        'iteration': 100,
+        'n_fingerprints': 549,
+    },
+}
+
+task = 'regression'  # 'regression'
+dataset = 'FFV' # 'Tg' or 'FFV'
+radius=nips_gnn[dataset]['radius']
+dim=nips_gnn[dataset]['dim']
+layer_hidden=nips_gnn[dataset]['layer_hidden']
+layer_output=nips_gnn[dataset]['layer_output']
+
+batch_train=nips_gnn[dataset]['batch_train']
+batch_test=nips_gnn[dataset]['batch_test']
+lr=nips_gnn[dataset]['lr']
+lr_decay=nips_gnn[dataset]['lr_decay']
+decay_interval=nips_gnn[dataset]['decay_interval']
+iteration=nips_gnn[dataset]['iteration']
+N_fingerprints = nips_gnn[dataset]['n_fingerprints']  # This should match the model's expected input size
+# For Tg: N_fingerprints = 651
+# For FFV: N_fingerprints = 549
 
 if torch.cuda.is_available():
     device = torch.device('cuda')
@@ -68,13 +107,14 @@ def predict(smiles_list, model_path, dict_path):
 
 # Example usage
 if __name__ == "__main__":
-    dict_path = './NIPS_GNN/trained_models/tg_dictionaries.pkl' # Using trained models
+    target = 'FFV'  # Target property or FFV
+    dict_path = f'./NIPS_GNN/trained_models/{target.lower()}_dictionaries.pkl' # Using trained models
     smiles_list = [
         "*Oc1ccc(C=NN=Cc2ccc(Oc3ccc(C(c4ccc(*)cc4)(C(F)(F)F)C(F)(F)F)cc3)cc2)cc1",
         "*Oc1ccc(C(C)(C)c2ccc(Oc3ccc(C(=O)c4cccc(C(=O)c5ccc(*)cc5)c4)cc3)cc2)cc1",
         "*c1cccc(OCCCCCCCCOc2cccc(N3C(=O)c4ccc(-c5cccc6c5C(=O)N(*)C6=O)cc4C3=O)c2)c1"
     ]
-    model_path = './NIPS_GNN/trained_models/model.pt' # Using trained models
+    model_path = f'./NIPS_GNN/trained_models/{target.lower()}_model.pt' # Using trained models
 
     predictions = predict(smiles_list, model_path, dict_path)
     for i, pred in enumerate(predictions):
