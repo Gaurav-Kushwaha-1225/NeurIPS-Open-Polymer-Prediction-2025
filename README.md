@@ -2,7 +2,7 @@
 
 ## Competition Overview
 
-The NeurIPS Open Polymer Prediction 2025 competition challenged participants to predict five key polymer properties from SMILES (Simplified Molecular Input Line Entry System) representations:
+The NeurIPS Open Polymer Prediction 2025 competition was to predict five polymer properties from SMILES (Simplified Molecular Input Line Entry System) representations:
 - **Tg**: Glass Transition Temperature
 - **Tc**: Crystallization Temperature  
 - **FFV**: Fractional Free Volume
@@ -135,3 +135,4 @@ Despite the disappointing final result, this project significantly advanced my u
 - "Compound-protein Interaction Prediction with End-to-end Learning of Neural Networks for Graphs and Sequences" (Tsubaki et al.)
 - "Heat-Resistant Polymer Discovery by Utilizing Interpretable Graph Neural Network with Small Data" (Haoke Qiu, Jingying Wang, ...)
 ---
+
