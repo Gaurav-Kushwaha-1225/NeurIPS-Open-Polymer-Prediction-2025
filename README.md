@@ -119,6 +119,7 @@ The multi-model approach proved effective, with each specialized GNN architectur
 ### Competition Links
 - [NeurIPS Open Polymer Prediction 2025](https://www.kaggle.com/competitions/neurips-open-polymer-prediction-2025)
 - [Competition Kaggle Notebook](https://www.kaggle.com/code/fridaycode/neurips-gnn-models)
+- [Competition Solution WriteUp](https://www.kaggle.com/competitions/neurips-open-polymer-prediction-2025/writeups/friday-code-gnn-based-solution)
 
 ### Referenced Repositories
 - [masashitsubaki/molecularGNN_smiles](https://github.com/masashitsubaki/molecularGNN_smiles)
@@ -128,6 +129,7 @@ The multi-model approach proved effective, with each specialized GNN architectur
 - "Compound-protein Interaction Prediction with End-to-end Learning of Neural Networks for Graphs and Sequences" (Tsubaki et al.)
 - "Heat-Resistant Polymer Discovery by Utilizing Interpretable Graph Neural Network with Small Data" (Haoke Qiu, Jingying Wang, ...)
 ---
+
 
 
 
