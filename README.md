@@ -80,7 +80,7 @@ NeurIPS-Open-Polymer-Prediction-2025/
 
 Despite achieving a strong public leaderboard score of 0.065 with my GNN ensemble, I made a critical error on the final submission day that cost me the competition.
 
-On the last day of the competition, influenced by discussion threads suggesting that models performing poorly on the public leaderboard (which used only ~8% of test data) might perform better on the private leaderboard (remaining ~92%), I decided to submit a different, inferior model instead of my best-performing GNN solution.
+On the last day of the competition, influenced by discussion threads suggesting that models performing poorly on the public leaderboard (which used only ~8% of test data) might perform better on the private leaderboard (remaining ~92%), I decided to submit a different, inferior model (of 0.070 Public LB Score) instead of my best-performing GNN solution.
 
 ### The Reasoning (Flawed)
 - **Public Leaderboard Overfitting Concerns**: The competition discussion was filled with warnings about leaderboard overfitting due to the small public test split
@@ -128,6 +128,7 @@ The multi-model approach proved effective, with each specialized GNN architectur
 - "Compound-protein Interaction Prediction with End-to-end Learning of Neural Networks for Graphs and Sequences" (Tsubaki et al.)
 - "Heat-Resistant Polymer Discovery by Utilizing Interpretable Graph Neural Network with Small Data" (Haoke Qiu, Jingying Wang, ...)
 ---
+
 
 
 
