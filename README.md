@@ -105,7 +105,6 @@ This single decision transformed what could have been a successful competition r
 1. **Trust Your CV**: Strong CV performance is usually the best predictor of final performance
 2. **Avoid Last-Minute Changes**: Stick to your best-validated approach rather than making strategy changes under pressure
 3. **Discussion Forum Caution**: While community discussions provide valuable insights, they can also lead to overthinking and poor decisions
-4. **Overfitting Paranoia**: Fear of public leaderboard overfitting can be more harmful than the overfitting itself
 
 ## Conclusion
 
@@ -113,7 +112,7 @@ This competition was both a technical challenge and a lesson in decision-making 
 
 While my GNN ensemble achieved strong performance (0.065 wMAE), the final submission mistake serves as a reminder that technical excellence must be paired with sound strategic judgment.
 
-The multi-model approach proved effective, with each specialized GNN architecture capturing different aspects of polymer structure-property relationships. The work demonstrates the value of domain-specific model design and the importance of matching model capabilities to problem characteristics.
+The multi-model approach proved effective, with each specialized GNN architecture capturing different aspects of polymer structure-property relationships. 
 
 Despite the disappointing final result, this project significantly advanced my understanding of:
 - Graph Neural Networks for molecular property prediction
@@ -135,4 +134,5 @@ Despite the disappointing final result, this project significantly advanced my u
 - "Compound-protein Interaction Prediction with End-to-end Learning of Neural Networks for Graphs and Sequences" (Tsubaki et al.)
 - "Heat-Resistant Polymer Discovery by Utilizing Interpretable Graph Neural Network with Small Data" (Haoke Qiu, Jingying Wang, ...)
 ---
+
 
