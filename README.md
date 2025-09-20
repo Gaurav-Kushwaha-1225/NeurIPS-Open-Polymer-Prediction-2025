@@ -114,12 +114,6 @@ While my GNN ensemble achieved strong performance (0.065 wMAE), the final submis
 
 The multi-model approach proved effective, with each specialized GNN architecture capturing different aspects of polymer structure-property relationships. 
 
-Despite the disappointing final result, this project significantly advanced my understanding of:
-- Graph Neural Networks for molecular property prediction
-- Polymer chemistry and structure-property relationships  
-- Competition strategy and psychological factors in high-stakes decisions
-- The value of systematic approaches over last-minute pivots
-
 ## Resources and References
 
 ### Competition Links
@@ -134,5 +128,6 @@ Despite the disappointing final result, this project significantly advanced my u
 - "Compound-protein Interaction Prediction with End-to-end Learning of Neural Networks for Graphs and Sequences" (Tsubaki et al.)
 - "Heat-Resistant Polymer Discovery by Utilizing Interpretable Graph Neural Network with Small Data" (Haoke Qiu, Jingying Wang, ...)
 ---
+
 
 
