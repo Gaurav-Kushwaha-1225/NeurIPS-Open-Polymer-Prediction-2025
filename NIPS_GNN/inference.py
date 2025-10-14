@@ -2,8 +2,8 @@ import os
 import torch
 from collections import defaultdict
 from rdkit import Chem
-from train import MolecularGraphNeuralNetwork, Tester
-import preprocess as pp
+from NIPS_GNN.train import MolecularGraphNeuralNetwork, Tester
+import NIPS_GNN.preprocess as pp
 import pickle
 import tqdm
 import numpy as np
@@ -62,7 +62,20 @@ else:
     print('The code uses a CPU...')
 
 
-def predict(smiles_list, model_path, dict_path):
+def predict(smiles_list, target, model_path, dict_path):
+    radius=nips_gnn[target]['radius']
+    dim=nips_gnn[target]['dim']
+    layer_hidden=nips_gnn[target]['layer_hidden']
+    layer_output=nips_gnn[target]['layer_output']
+
+    batch_train=nips_gnn[target]['batch_train']
+    batch_test=nips_gnn[target]['batch_test']
+    lr=nips_gnn[target]['lr']
+    lr_decay=nips_gnn[target]['lr_decay']
+    decay_interval=nips_gnn[target]['decay_interval']
+    iteration=nips_gnn[target]['iteration']
+    N_fingerprints = nips_gnn[target]['n_fingerprints']
+
     # Reinitialize the model structure
     model = MolecularGraphNeuralNetwork(N_fingerprints, dim, layer_hidden, layer_output).to(device)
     
