@@ -74,7 +74,7 @@ jobs:
       - name: Ensure kernel metadata exists
         run: |
           test -f kaggle_kernel/kernel-metadata.json
-          test -f kaggle_kernel/polymer-predict.ipynb
+          test -f kaggle_kernel/neurips-polymer-predict.ipynb
 
       - name: Push & run the kernel
         run: |
