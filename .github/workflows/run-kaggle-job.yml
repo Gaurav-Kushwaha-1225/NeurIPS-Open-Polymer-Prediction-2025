@@ -53,22 +53,32 @@ jobs:
           EOF
           cat > kaggle_inputs/dataset-metadata.json <<'EOF'
           {
-            "title": "NeurIPS Polymer",
-            "id": "fridaycode/neurips-polymer",
+            "title": "Polymer Job Inputs",
+            "id": "fridaycode/polymer-job-inputs",
             "licenses": [{"name": "CC0-1.0"}]
           }
           EOF
+          echo "Written kaggle_inputs/input.csv:"
+          cat kaggle_inputs/input.csv
 
-      - name: Create or version the dataset
+      - name: Create or version the micro-dataset
         shell: bash
         run: |
-          set -e
+          # Create once; then version forever
           if kaggle datasets create -p kaggle_inputs; then
-            echo "Created dataset fridaycode/neurips-polymer"
+            echo "Created dataset fridaycode/polymer-job-inputs"
           else
             kaggle datasets version -p kaggle_inputs -m "job ${{ github.event.inputs.job_id }}"
-            echo "Versioned dataset fridaycode/neurips-polymer"
+            echo "Versioned dataset fridaycode/polymer-job-inputs"
           fi
+
+      - name: Verify dataset contains our input.csv
+        run: |
+          kaggle datasets files -d fridaycode/polymer-job-inputs || true
+          mkdir -p check && kaggle datasets download -d fridaycode/polymer-job-inputs -f input.csv -p check
+          ls -l check
+          echo "Top of downloaded input.csv:"
+          head -n 5 check/input.csv
 
       - name: Ensure kernel metadata exists
         run: |
@@ -85,15 +95,11 @@ jobs:
         run: |
           set -e
           KERNEL_ID="fridaycode/neurips-polymer-predict"
-          for i in {1..80}; do   # ~20 minutes max
+          for i in {1..60}; do
             STATUS=$(kaggle kernels status "$KERNEL_ID" | tr -d '\r')
             echo "Status: $STATUS"
-            if echo "$STATUS" | grep -qi "complete"; then
-              break
-            fi
-            if echo "$STATUS" | grep -qi "error\|failed"; then
-              echo "Kernel failed"; break
-            fi
+            if echo "$STATUS" | grep -qi "complete"; then break; fi
+            if echo "$STATUS" | grep -qi "error\|failed"; then echo "Kernel failed"; exit 1; fi
             sleep 15
           done
 
@@ -101,7 +107,13 @@ jobs:
         run: |
           mkdir -p outputs
           kaggle kernels output fridaycode/neurips-polymer-predict -p outputs || true
-          ls -la outputs || true
+          echo "Outputs dir:"
+          ls -la outputs
+          if [ -f outputs/output.json ]; then
+            cp outputs/output.json results.json
+          else
+            echo '{"error":"no-output"}' > results.json
+          fi
 
       - name: Create result JSON
         run: |

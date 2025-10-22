@@ -12,7 +12,8 @@
   "keywords": [],
   "dataset_sources": [
     "fridaycode/neurips-polymer",
-    "alexejovtcharenko/wheels"
+    "alexejovtcharenko/wheels",
+    "fridaycode/polymer-job-inputs"
   ],
   "kernel_sources": [],
   "competition_sources": [],
