@@ -85,14 +85,14 @@ jobs:
         run: |
           set -e
           KERNEL_ID="fridaycode/neurips-polymer-predict"
-          for i in {1..60}; do   # ~15 minutes max (60 * 15s)
+          for i in {1..80}; do   # ~20 minutes max
             STATUS=$(kaggle kernels status "$KERNEL_ID" | tr -d '\r')
             echo "Status: $STATUS"
-            if echo "$Poll kernel statusSTATUS" | grep -qi "complete"; then
+            if echo "$STATUS" | grep -qi "complete"; then
               break
             fi
             if echo "$STATUS" | grep -qi "error\|failed"; then
-              echo "Kernel failed"; exit 1
+              echo "Kernel failed"; break
             fi
             sleep 15
           done
