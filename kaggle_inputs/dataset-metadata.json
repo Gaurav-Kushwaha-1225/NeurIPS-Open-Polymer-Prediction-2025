@@ -1,0 +1,16 @@
+{
+    "datasetId": 8548682,
+    "datasetSlug": "neurips-polymer",
+    "ownerUser": "fridaycode",
+    "usabilityRating": 0.29411764705882354,
+    "totalViews": 4,
+    "totalDownloads": 1,
+    "title": "NeurIPS Polymer Inference",
+    "subtitle": "",
+    "description": "",
+    "licenses": [
+        {
+            "name": "CC0-1.0"
+        }
+    ]
+}

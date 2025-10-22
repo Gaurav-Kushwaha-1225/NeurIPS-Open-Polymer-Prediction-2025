@@ -1,0 +1,23 @@
+{
+  "id": "fridaycode/neurips-polymer-predict",
+  "id_no": 96091015,
+  "title": "NeurIPS Polymer Predict",
+  "code_file": "neurips-polymer-predict.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": false,
+  "enable_gpu": false,
+  "enable_tpu": false,
+  "enable_internet": true,
+  "keywords": [],
+  "dataset_sources": [
+    "fridaycode/neurips-polymer",
+    "alexejovtcharenko/wheels"
+  ],
+  "kernel_sources": [],
+  "competition_sources": [],
+  "model_sources": [
+    "fridaycode/neurips-chembert-with-augmented-data/Transformers/default/29",
+    "fridaycode/neurips-chembert-with-augmented-data/PyTorch/nips-e50/4"
+  ]
+}

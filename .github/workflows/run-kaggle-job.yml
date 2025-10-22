@@ -1,0 +1,132 @@
+name: run-kaggle-job
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: "Unique job id"
+        required: true
+        type: string
+      smiles:
+        description: "SMILES string"
+        required: true
+        type: string
+      email:
+        description: "Email to notify"
+        required: true
+        type: string
+
+permissions:
+  contents: write   # allow committing results back
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Kaggle CLI
+        run: pip install kaggle
+
+      - name: Configure Kaggle credentials
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          mkdir -p ~/.kaggle
+          printf '{"username":"%s","key":"%s"}' "$KAGGLE_USERNAME" "$KAGGLE_KEY" > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+
+      - name: Prepare input dataset folder
+        run: |
+          rm -rf kaggle_inputs && mkdir -p kaggle_inputs
+          cat > kaggle_inputs/input.csv <<EOF
+          job_id,smiles
+          ${{ github.event.inputs.job_id }},${{ github.event.inputs.smiles }}
+          EOF
+          cat > kaggle_inputs/dataset-metadata.json <<'EOF'
+          {
+            "title": "NeurIPS Polymer",
+            "id": "fridaycode/neurips-polymer",
+            "licenses": [{"name": "CC0-1.0"}]
+          }
+          EOF
+
+      - name: Create or version the dataset
+        shell: bash
+        run: |
+          set -e
+          # Try to create; if exists, version it.
+          if kaggle datasets create -p kaggle_inputs -q; then
+            echo "Created dataset fridaycode/neurips-polymer"
+          else
+            kaggle datasets version -p kaggle_inputs -m "job ${{ github.event.inputs.job_id }}" -q
+            echo "Versioned dataset fridaycode/neurips-polymer"
+          fi
+
+      - name: Ensure kernel metadata exists
+        run: |
+          test -f kaggle_kernel/kernel-metadata.json
+          test -f kaggle_kernel/polymer-predict.ipynb
+
+      - name: Push & run the kernel
+        run: |
+          # This creates/updates AND runs the notebook
+          kaggle kernels push -p kaggle_kernel -q
+
+      - name: Poll kernel status
+        shell: bash
+        run: |
+          set -e
+          KERNEL_ID="fridaycode/neurips-polymer-predict"
+          for i in {1..60}; do   # ~15 minutes max (60 * 15s)
+            STATUS=$(kaggle kernels status "$KERNEL_ID" | tr -d '\r')
+            echo "Status: $STATUS"
+            if echo "$STATUS" | grep -qi "complete"; then
+              break
+            fi
+            if echo "$STATUS" | grep -qi "error\|failed"; then
+              echo "Kernel failed"; exit 1
+            fi
+            sleep 15
+          done
+
+      - name: Download kernel outputs
+        run: |
+          mkdir -p outputs
+          kaggle kernels output fridaycode/neurips-polymer-predict -p outputs -q || true
+          ls -la outputs || true
+
+      - name: Create result JSON
+        run: |  
+          if [ -f outputs/output.json ]; then
+            cp outputs/output.json results.json
+          elif [ -f outputs/output.csv ]; then
+            python - <<'PY'
+import pandas as pd, json
+df = pd.read_csv('outputs/output.csv')
+json.dump(df.iloc[0].to_dict(), open('results.json', 'w'))
+PY
+          else
+            echo '{"error":"no-output"}' > results.json
+          fi
+
+      - name: Commit result file back to repo
+        env:
+          JOB_ID: ${{ github.event.inputs.job_id }}
+          EMAIL:  ${{ github.event.inputs.email }}
+        run: |
+          mkdir -p results
+          cp results.json "results/${JOB_ID}.json"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add results/${JOB_ID}.json
+          git commit -m "results: ${JOB_ID} email=${EMAIL}" || echo "No changes"
+          git push
