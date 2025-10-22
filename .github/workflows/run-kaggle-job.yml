@@ -48,7 +48,7 @@ jobs:
         run: |
           rm -rf kaggle_inputs && mkdir -p kaggle_inputs
           cat > kaggle_inputs/input.csv <<EOF
-          job_id,smiles
+          job_id,SMILES
           ${{ github.event.inputs.job_id }},${{ github.event.inputs.smiles }}
           EOF
           cat > kaggle_inputs/dataset-metadata.json <<'EOF'
@@ -88,7 +88,7 @@ jobs:
           for i in {1..60}; do   # ~15 minutes max (60 * 15s)
             STATUS=$(kaggle kernels status "$KERNEL_ID" | tr -d '\r')
             echo "Status: $STATUS"
-            if echo "$STATUS" | grep -qi "complete"; then
+            if echo "$Poll kernel statusSTATUS" | grep -qi "complete"; then
               break
             fi
             if echo "$STATUS" | grep -qi "error\|failed"; then
