@@ -105,15 +105,11 @@ jobs:
           ls -la outputs || true
 
       - name: Create result JSON
-        run: |  
+        run: |
           if [ -f outputs/output.json ]; then
             cp outputs/output.json results.json
           elif [ -f outputs/output.csv ]; then
-            python - <<'PY'
-import pandas as pd, json
-df = pd.read_csv('outputs/output.csv')
-json.dump(df.iloc[0].to_dict(), open('results.json', 'w'))
-PY
+            python -c "import pandas as pd, json; df = pd.read_csv('outputs/output.csv'); json.dump(df.iloc[0].to_dict(), open('results.json','w'))"
           else
             echo '{"error":"no-output"}' > results.json
           fi
