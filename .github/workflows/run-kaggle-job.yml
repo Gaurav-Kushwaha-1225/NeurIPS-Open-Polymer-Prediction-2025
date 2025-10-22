@@ -63,11 +63,10 @@ jobs:
         shell: bash
         run: |
           set -e
-          # Try to create; if exists, version it.
-          if kaggle datasets create -p kaggle_inputs -q; then
+          if kaggle datasets create -p kaggle_inputs; then
             echo "Created dataset fridaycode/neurips-polymer"
           else
-            kaggle datasets version -p kaggle_inputs -m "job ${{ github.event.inputs.job_id }}" -q
+            kaggle datasets version -p kaggle_inputs -m "job ${{ github.event.inputs.job_id }}"
             echo "Versioned dataset fridaycode/neurips-polymer"
           fi
 
@@ -78,8 +77,8 @@ jobs:
 
       - name: Push & run the kernel
         run: |
-          # This creates/updates AND runs the notebook
-          kaggle kernels push -p kaggle_kernel -q
+          # Uploads metadata + notebook and runs it
+          kaggle kernels push -p kaggle_kernel
 
       - name: Poll kernel status
         shell: bash
@@ -101,7 +100,7 @@ jobs:
       - name: Download kernel outputs
         run: |
           mkdir -p outputs
-          kaggle kernels output fridaycode/neurips-polymer-predict -p outputs -q || true
+          kaggle kernels output fridaycode/neurips-polymer-predict -p outputs || true
           ls -la outputs || true
 
       - name: Create result JSON
