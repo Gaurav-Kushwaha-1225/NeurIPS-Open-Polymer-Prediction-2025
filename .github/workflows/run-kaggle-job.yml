@@ -119,18 +119,18 @@ jobs:
           test -f kaggle_kernel/neurips-polymer-predict.ipynb
       
       - name: Point kernel to the same job-inputs dataset ID
-          run: |
-            python - <<'PY'
-            import json, os, pathlib
-            p = pathlib.Path("kaggle_kernel/kernel-metadata.json")
-            data = json.loads(p.read_text())
-            ds_id = f"{os.environ['KAGGLE_USERNAME']}/{os.environ['DS_SLUG']}"
-            srcs = set(data.get("dataset_sources", []))
-            srcs.add(ds_id)
-            data["dataset_sources"] = sorted(srcs)
-            p.write_text(json.dumps(data, indent=2))
-            print("dataset_sources:", data["dataset_sources"])
-            PY
+        run: |
+          python - <<'PY'
+          import json, os, pathlib
+          p = pathlib.Path("kaggle_kernel/kernel-metadata.json")
+          data = json.loads(p.read_text())
+          ds_id = f"{os.environ['KAGGLE_USERNAME']}/{os.environ['DS_SLUG']}"
+          srcs = set(data.get("dataset_sources", []))
+          srcs.add(ds_id)
+          data["dataset_sources"] = sorted(srcs)
+          p.write_text(json.dumps(data, indent=2))
+          print("dataset_sources:", data["dataset_sources"])
+          PY
 
       - name: Push & run the kernel
         run: |
