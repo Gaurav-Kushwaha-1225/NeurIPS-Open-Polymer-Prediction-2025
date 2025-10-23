@@ -19,6 +19,6 @@
   "competition_sources": [],
   "model_sources": [
     "fridaycode/neurips-chembert-with-augmented-data/Transformers/default/29",
-    "fridaycode/neurips-chembert-with-augmented-data/PyTorch/nips-e50/4"
+    "fridaycode/neurips-nips/PyTorch/default/1"
   ]
 }
