@@ -19,6 +19,10 @@ on:
 permissions:
   contents: write   # allow committing results back
 
+env:
+  DS_SLUG: polymer-job-inputs
+  DS_TITLE: Polymer Job Inputs
+
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -47,53 +51,54 @@ jobs:
       - name: Prepare input dataset folder
         run: |
           rm -rf kaggle_inputs && mkdir -p kaggle_inputs
-          # CSV read by the notebook
+          # CSV the kernel reads
           cat > kaggle_inputs/input.csv <<EOF
           job_id,SMILES
           ${{ github.event.inputs.job_id }},${{ github.event.inputs.smiles }}
           EOF
 
-          # JSON for traceability (same basename used later in results/)
+          # optional request JSON (kept as you wanted)
           cat > "kaggle_inputs/job-${{ github.event.inputs.job_id }}.json" <<EOF
-          {
-            "job_id": "${{ github.event.inputs.job_id }}",
-            "SMILES": "${{ github.event.inputs.smiles }}",
-            "email": "${{ github.event.inputs.email }}",
-            "ts_utc": "${{ github.run_started_at }}"
-          }
+          {"job_id":"${{ github.event.inputs.job_id }}","SMILES":"${{ github.event.inputs.smiles }}","email":"${{ github.event.inputs.email }}","ts_utc":"${{ github.run_started_at }}"}
           EOF
 
-          # dataset metadata (unchanged id)
-          cat > kaggle_inputs/dataset-metadata.json <<'EOF'
+          # dataset-metadata.json bound to THIS account
+          cat > kaggle_inputs/dataset-metadata.json <<EOF
           {
-            "title": "Polymer Job Inputs",
-            "id": "fridaycode/polymer-job-inputs",
+            "title": "${DS_TITLE}",
+            "id": "${{ secrets.KAGGLE_USERNAME }}/${DS_SLUG}",
             "licenses": [{"name": "CC0-1.0"}]
           }
           EOF
 
-      - name: Create or version the micro-dataset
+      - name: Create or version the micro-dataset (owner = your API user)
         shell: bash
+        env:
+          DS_ID: ${{ secrets.KAGGLE_USERNAME }}/$DS_SLUG
         run: |
           set -e
-          if kaggle datasets create -p kaggle_inputs --dir-mode zip; then
-            echo "Created dataset fridaycode/polymer-job-inputs"
-          else
+          # Does the dataset already exist for this owner?
+          if kaggle datasets files -d "$DS_ID" >/dev/null 2>&1; then
+            echo "Dataset exists: $DS_ID -> versioning"
             kaggle datasets version -p kaggle_inputs --dir-mode zip -m "job ${{ github.event.inputs.job_id }}"
-            echo "Versioned dataset fridaycode/polymer-job-inputs"
+          else
+            echo "Creating dataset: $DS_ID"
+            kaggle datasets create -p kaggle_inputs --dir-mode zip
           fi
 
       - name: Wait for dataset to propagate & verify
         shell: bash
+        env:
+          DS_ID: ${{ secrets.KAGGLE_USERNAME }}/$DS_SLUG
         run: |
           set -e
-          DS="fridaycode/polymer-job-inputs"
           for i in {1..30}; do
-            if kaggle datasets files -d "$DS" | grep -q 'input.csv'; then break; fi
+            if kaggle datasets files -d "$DS_ID" | grep -q 'input.csv'; then break; fi
             sleep 4
           done
-          mkdir -p check && kaggle datasets download -d "$DS" -f input.csv -p check
-          head -n 5 check/input.csv
+          mkdir -p check
+          kaggle datasets download -d "$DS_ID" -f input.csv -p check --force
+          echo "Top of downloaded input.csv:"; head -n 5 check/input.csv
 
       - name: Verify dataset contains our input.csv
         run: |
@@ -161,8 +166,10 @@ jobs:
           git add "results/${JOB_FILE}"
           git commit -m "results: ${JOB_FILE} email=${EMAIL}" || echo "No changes"
           git push
+      
       - name: (Optional) Attach result JSON to dataset
         env:
+          DS_ID: ${{ secrets.KAGGLE_USERNAME }}/$DS_SLUG
           JOB_ID: ${{ github.event.inputs.job_id }}
         run: |
           cp results.json "kaggle_inputs/job-${JOB_ID}.result.json"
