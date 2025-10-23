@@ -47,30 +47,53 @@ jobs:
       - name: Prepare input dataset folder
         run: |
           rm -rf kaggle_inputs && mkdir -p kaggle_inputs
+          # Header MUST be SMILES (uppercase) because the notebook reads df['SMILES']
           cat > kaggle_inputs/input.csv <<EOF
           job_id,SMILES
           ${{ github.event.inputs.job_id }},${{ github.event.inputs.smiles }}
           EOF
-          cat > kaggle_inputs/dataset-metadata.json <<'EOF'
+          # IMPORTANT: own the dataset under the same account as the API key
+          cat > kaggle_inputs/dataset-metadata.json <<EOF
           {
             "title": "Polymer Job Inputs",
-            "id": "fridaycode/polymer-job-inputs",
+            "id": "${KAGGLE_USERNAME}/polymer-job-inputs",
             "licenses": [{"name": "CC0-1.0"}]
           }
           EOF
-          echo "Written kaggle_inputs/input.csv:"
-          cat kaggle_inputs/input.csv
+          echo "Created kaggle_inputs/input.csv:"; cat kaggle_inputs/input.csv
 
-      - name: Create or version the micro-dataset
+      - name: Create-or-version the micro dataset
         shell: bash
         run: |
-          # Create once; then version forever
+          set -e
+          DS="${KAGGLE_USERNAME}/polymer-job-inputs"
+          echo "Target dataset: $DS"
+          # Try create once; if it already exists, version it
           if kaggle datasets create -p kaggle_inputs; then
-            echo "Created dataset fridaycode/polymer-job-inputs"
+            echo "Created dataset $DS"
           else
             kaggle datasets version -p kaggle_inputs -m "job ${{ github.event.inputs.job_id }}"
-            echo "Versioned dataset fridaycode/polymer-job-inputs"
+            echo "Versioned dataset $DS"
           fi
+
+      - name: Wait for dataset to propagate & verify
+        shell: bash
+        run: |
+          set -e
+          DS="${KAGGLE_USERNAME}/polymer-job-inputs"
+          mkdir -p check
+          # Wait until Kaggle shows input.csv in the latest version
+          for i in {1..30}; do
+            if kaggle datasets files -d "$DS" | grep -q 'input.csv'; then
+              break
+            fi
+            echo "Waiting for $DS to expose input.csv ..."; sleep 5
+          done
+          kaggle datasets download -d "$DS" -f input.csv -p check
+          echo "Downloaded file:"
+          ls -l check/input.csv
+          echo "Top of input.csv:"
+          head -n 5 check/input.csv
 
       - name: Verify dataset contains our input.csv
         run: |
