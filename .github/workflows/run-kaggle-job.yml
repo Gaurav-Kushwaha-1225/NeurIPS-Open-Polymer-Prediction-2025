@@ -38,8 +38,15 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Kaggle CLI
-        run: pip install kaggle
+      - name: Pin Kaggle CLI (single, consistent version)
+        run: |
+          python -m pip install --upgrade --force-reinstall "kaggle==1.7.4.5"
+          python - <<'PY'
+          import kaggle, inspect
+          from kaggle import http_client
+          print("kaggle version:", getattr(kaggle, "__version__", "unknown"))
+          print("KaggleHttpClient.call signature:", inspect.signature(http_client.KaggleHttpClient.call))
+          PY
 
       - name: Configure Kaggle credentials
         env:
@@ -95,15 +102,14 @@ jobs:
         shell: bash
         run: |
           set -e
-          DS_ID="${KAGGLE_USERNAME}/${DS_SLUG}"
           for i in {1..30}; do
             if kaggle datasets files -d "$DS_ID" | grep -q 'input.csv'; then break; fi
             sleep 4
           done
           mkdir -p check
+          rm -f check/input.csv         # prevent resume of a partial
           kaggle datasets download -d "$DS_ID" -f input.csv -p check --force
-          echo "Top of downloaded input.csv:"
-          head -n 5 check/input.csv
+          echo "Top of downloaded input.csv:"; head -n 5 check/input.csv
 
       - name: Verify dataset contains our input.csv
         run: |
