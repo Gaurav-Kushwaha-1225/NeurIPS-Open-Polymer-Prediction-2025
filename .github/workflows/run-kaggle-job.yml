@@ -38,9 +38,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Kaggle CLI
+      - name: Install Kaggle CLI (pinned + deterministic)
         run: |
-          pip install kaggle
+          python -m pip install --upgrade pip
+          # Pin to a known-good kaggle release and force reinstall to avoid partial/cached mismatches
+          python -m pip install --force-reinstall --no-cache-dir "kaggle==1.6.12"
           kaggle --version
 
       - name: Configure Kaggle credentials
@@ -51,6 +53,31 @@ jobs:
           mkdir -p ~/.kaggle
           printf '{"username":"%s","key":"%s"}' "$KAGGLE_USERNAME" "$KAGGLE_KEY" > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
+
+      - name: Debug: show kaggle installation & runtime info
+        run: |
+          python - <<'PY'
+          import importlib, inspect, sys
+          try:
+              import kaggle
+              print("kaggle.__version__", getattr(kaggle, '__version__', 'unknown'))
+              print("kaggle package file:", kaggle.__file__)
+          except Exception as e:
+              print("Error importing kaggle:", e)
+          try:
+              import kaggle.api.kaggle_api_extended as kae
+              print("Has KaggleHttpClient:", hasattr(kae, 'KaggleHttpClient'))
+              if hasattr(kae, 'KaggleHttpClient'):
+                  sig = inspect.signature(kae.KaggleHttpClient.call)
+                  print("KaggleHttpClient.call signature:", sig)
+                  src = inspect.getsource(kae.KaggleHttpClient.call)
+                  print("--- start KaggleHttpClient.call source ---")
+                  print(src)
+                  print("--- end KaggleHttpClient.call source ---")
+          except Exception as e:
+              print("Error inspecting KaggleHttpClient:", e)
+          print("sys.executable:", sys.executable)
+          PY
 
       - name: Prepare input dataset folder
         run: |
@@ -93,7 +120,7 @@ jobs:
             fi
           fi
 
-      - name: Wait for dataset to propagate & verify
+      - name: Wait for dataset to propagate & verify (with retry + reinstall fallback)
         shell: bash
         run: |
           set -e
@@ -103,7 +130,23 @@ jobs:
             sleep 4
           done
           mkdir -p check
-          kaggle datasets download -d "$DS_ID" -f input.csv -p check --force
+
+          # Retry loop to handle transient or environment-inconsistency failures.
+          # If the kaggle CLI fails with the 'headers' TypeError, this will reinstall a pinned kaggle and retry.
+          for attempt in 1 2 3; do
+            echo "Attempt $attempt to download input.csv"
+            if kaggle datasets download -d "$DS_ID" -f input.csv -p check --force; then
+              echo "Download succeeded"
+              break
+            fi
+            echo "Download failed. Force-reinstalling kaggle pinned version and retrying."
+            python -m pip install --force-reinstall --no-cache-dir "kaggle==1.6.12"
+            sleep 2
+            if [ "$attempt" = "3" ]; then
+              echo "All download attempts failed"; exit 1
+            fi
+          done
+
           echo "Top of downloaded input.csv:"
           head -n 5 check/input.csv
 
