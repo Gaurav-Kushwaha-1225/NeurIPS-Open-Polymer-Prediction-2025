@@ -54,7 +54,7 @@ jobs:
           printf '{"username":"%s","key":"%s"}' "$KAGGLE_USERNAME" "$KAGGLE_KEY" > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
 
-      - name: Debug: show kaggle installation & runtime info
+      - name: Debug show kaggle installation & runtime info
         run: |
           python - <<'PY'
           import importlib, inspect, sys
